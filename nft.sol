@@ -14,12 +14,17 @@ contract NFT{
     uint counter = 0;
 
     // Create a function to mint an NFT. 
-    function mint(uint _power, uint _defense, bool _isEvil) external{
+    function mint(uint _power, uint _defense, bool _isEvil) external payable{
+        // Check if the sender sent enough ether in the transaction.
+        require(msg.value >= 1 ether, "Not enough ether");
+
+        // Set the owner of the new NFT to the sender.
         idToOwner[counter] = msg.sender;
         
         // Initialize data for NFT. 
         monsters[counter] = Monster(_power, _defense, _isEvil);
 
+        // Increase NFT counter by 1.
         counter++;
     }
     
@@ -31,13 +36,36 @@ contract NFT{
         // Check if the recipient is not 0x0000000..00.
         require(to != address(0), "Invalid address");
 
-        // Transfer the NFT.
+        // Set the owner of the NFT to the recipient address.
         idToOwner[id] = to;
     }
 
     // Create a function to get the NFT.
     function getMonster(uint id) external view returns(Monster memory){
             return monsters[id];
+    }
+
+    function withdraw() external{
+        // TODO: work on this.
+    }
+
+    // Create a function to breed two NFTs.
+    function breed(uint id1, uint id2) external{
+        // Check if the sender owns both NFTs.
+        require(idToOwner[id1] == msg.sender && idToOwner[id2] == msg.sender, "You do not own both NFTs");
+
+        // Set the owner of the new NFT to the sender.
+        idToOwner[counter] = msg.sender;
+
+        // Initialize data for the new NFT.
+        uint power = monsters[id1].power + monsters[id2].power;
+        uint defense = monsters[id1].defense + monsters[id2].defense;
+        bool isEvil = monsters[id1].isEvil || monsters[id2].isEvil;
+
+        monsters[counter] = Monster(power, defense, isEvil);
+
+        // Increase NFT counter by 1. 
+        counter++;
     }
 
     // Create a function to update NFT data for power attribute.
